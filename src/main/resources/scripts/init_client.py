@@ -103,32 +103,33 @@ def rungame():
     subprocess.call(minecraft_command)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('arg1', type=str, help='a username')
-    parser.add_argument('arg2', type=str, help='game version')
-    parser.add_argument('arg3', type=str, help='allocram')
-    parser.add_argument('arg4', type=str, help='action')
-    args = parser.parse_args()
+        parser = argparse.ArgumentParser()
+        parser.add_argument('arg1', type=str, help='a username')
+        parser.add_argument('arg2', type=str, help='game version')
+        parser.add_argument('arg3', type=str, help='allocram')
+        parser.add_argument('arg4', type=str, help='action')
+        args = parser.parse_args()
 
-    #generation of settings file
-    default_settings["User-info"][0]["username"] = args.arg1
-    default_settings["selected-version"] = args.arg2
-    default_settings["allocated_ram"] = args.arg3
+        #generation of settings file
+        default_settings["User-info"][0]["username"] = args.arg1
+        default_settings["selected-version"] = args.arg2
+        default_settings["allocated_ram"] = args.arg3
 
-    write_settings(default_settings)
-    print(r"{}/settings.json".format(curr_dir))
-    path_file()
+        write_settings(default_settings)
+        print(r"{}/settings.json".format(curr_dir))
+        path_file()
 
-    create_args()
-    generate_cracked_uid()
+        create_args()
+        generate_cracked_uid()
 
-    settings = load_settings()
+        settings = load_settings()
 
-    print(settings)
+        print(settings)
 
-    if args.arg4 == "start":
-        print("Starting Minecraft...")
-        print(f"Machine: {settings['PC-info'][0]['OS']}")
+        if args.arg4 == "start":
+            print("Starting Minecraft...")
+            print(f"Machine: {settings['PC-info'][0]['OS']}")
 
-        rungame()
+            rungame()
+
 
