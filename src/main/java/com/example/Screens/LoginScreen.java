@@ -75,6 +75,23 @@ public class LoginScreen extends Application {
                 versionList.getItems().add(x);
             }
         }
+        versionList.setCellFactory(lv -> new ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    if (CheckVersionExistance.isVersionExists(item)) {
+                        setStyle("-fx-text-fill: green;");
+                    } else {
+                        setStyle("-fx-text-fill: black;");
+                    }
+                }
+            }
+        });
         versionList.setValue("Choose version.");
         versionList.setPrefWidth(100);
     
@@ -109,10 +126,12 @@ public class LoginScreen extends Application {
             System.out.println(uname.getText() + " " + versionList.getValue() + " " + (int) ramSlider.getValue() + "MB.");
             //checking if minecraft folder and the game exists
             boolean pathexist = ExistenceChecker.version_exist(versionList.getValue());
-            System.out.println(pathexist);
+            System.out.println(String.format("Converted value - %s",pathexist));
             
             //creating settings.json
-            InitializationHandler.init_client(uname.getText(), versionList.getValue(), (int) ramSlider.getValue(),"none");
+            if (!(this._gameThread != null && this._gameThread.isAlive()) && !(this._workerThread != null && this._workerThread.isAlive())){
+                InitializationHandler.init_client(uname.getText(), versionList.getValue(), (int) ramSlider.getValue(),"none");
+            }
             try
             {
                 if (!pathexist) {
@@ -148,7 +167,8 @@ public class LoginScreen extends Application {
                     if (this._gameThread != null && this._gameThread.isAlive()) {
                         System.out.println("Game is still running.");
                     }
-                    else{
+                    else
+                    {
                         Task<Void> gameTask = new Task<Void>() {
                             
                             @Override

@@ -85,7 +85,15 @@ def create_args():
         if settings["allocated_ram"] is None:
             raise ValueError("Allocated RAM is not set in settings.")
         # Xmx maximum heap  Xms initial heap 
-        settings["jvm-args"] = [f"-Xmx{int(settings['allocated_ram'])}M", "-Xms128M"]
+        settings["jvm-args"] = [f"-Xmx{int(settings['allocated_ram'])}M", 
+                                "-Xms128M",
+                                "-XX:+UseG1GC",
+                                "-Dsun.rmi.dgc.server.gcInterval=2147483646",
+                                "-XX:+UnlockExperimentalVMOptions",
+                                "-XX:G1NewSizePercent=20",
+                                "-XX:G1ReservePercent=20",
+                                "-XX:MaxGCPauseMillis=25",
+                                "-XX:G1HeapRegionSize=32M"]
         write_settings(settings)
 
 
