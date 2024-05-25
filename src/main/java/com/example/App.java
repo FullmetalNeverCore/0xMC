@@ -8,7 +8,7 @@ public class App
 {
     public static void main( String[] args )
     {
-        System.out.println("potention staddrt of my minecraft launcher..." );
+        System.out.println("initialization..." );
         Application.launch(com.mcl.LoginScreen.class,args);
     }
 }

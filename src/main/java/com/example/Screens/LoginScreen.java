@@ -1,4 +1,5 @@
 package com.mcl;
+
 import javafx.animation.FadeTransition;
 import javafx.util.Duration;
 import javafx.application.Application;
@@ -44,7 +45,7 @@ public class LoginScreen extends Application {
 
 
         //adding login box to screen 
-        this._root.getChildren().add(createBox());
+        this._root.getChildren().add(createLoginUI());
 
 
         this._scene = new Scene(_root, 800, 600);
@@ -54,20 +55,36 @@ public class LoginScreen extends Application {
         this._primaryStage.show();
     }
 
+    public static Boolean enableLogin(String username, String version,Text status,Button login) {
+        if (!version.equals("Choose version.")) {
+            if (username.length() == 0) {
+                System.out.println("Please enter username.");
+                status.setText("Status: Enter username.");
+                status.setStyle("-fx-fill: red;");
+                login.setDisable(true); 
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            System.out.println("Please choose version.");
+            status.setText("Status: Choose the version.");
+            status.setStyle("-fx-fill: red;");
+            login.setDisable(true); 
+            return false;
+        }
+    }
 
     //TODO: login and version caching
-    public VBox createBox() {
+    public VBox createLoginUI() {
 
-        Text status = new Text("Status: Standby");
+        Text status = UIBuildingBlocks.createText("Status: Standby");
         status.setStyle("-fx-fill: yellow;");
 
-        VBox vbox = new VBox();
-        vbox.setPadding(new Insets(20));
-        vbox.setAlignment(Pos.CENTER);
+        VBox vbox = UIBuildingBlocks.createBox();
     
-        TextField uname = new TextField();
+        TextField uname = UIBuildingBlocks.createTextField();
         uname.setPromptText("Username");
-        uname.setPrefWidth(100);
     
         ComboBox<String> versionList = new ComboBox<>();
         for (String x : this._versions) {
@@ -96,14 +113,33 @@ public class LoginScreen extends Application {
         versionList.setPrefWidth(100);
     
         Button login = new Button("Play");
-    
-        OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
-    
-        long totalPhysicalMemorySize = osBean.getTotalPhysicalMemorySize();
-    
-        long totalMemory = totalPhysicalMemorySize / (1024 * 1024);
+
+
+        //block the login button to prevent empty form
+        login.setDisable(true); 
+        status.setText("Status: Choose the version.");
+        status.setStyle("-fx-fill: red;");
+
+        uname.setOnKeyReleased(e -> {
+            //if true,login button will actiavte itself.
+            if(enableLogin(uname.getText(), versionList.getValue(),status,login) == true){
+                login.setDisable(false);
+                status.setText("");
+            }
+        });
+
+        versionList.setOnAction(e -> {
+            if(enableLogin(uname.getText(), versionList.getValue(),status,login) == true){
+                login.setDisable(false);
+                status.setText("");
+            }
+        });
+
         
-        Text name = new Text("0xMC");
+        
+        long totalMemory = OSData.getTotalMemory(); //getting total RAM amount;
+        
+        Text name = UIBuildingBlocks.createText("0xMC");
         name.setStyle("-fx-fill: gray;");
         name.setFont(this._font);
 
@@ -113,7 +149,7 @@ public class LoginScreen extends Application {
         ramSlider.setMajorTickUnit(totalMemory / 4);
         ramSlider.setBlockIncrement(totalMemory / 10);
     
-        Text selectedRam = new Text("Selected RAM: " + ((int) ramSlider.getValue()) + "MB");
+        Text selectedRam = UIBuildingBlocks.createText("Selected RAM: " + ((int) ramSlider.getValue()) + "MB");
         selectedRam.setStyle("-fx-fill: white;");
         ramSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
             selectedRam.setText("Allocated RAM: " + newVal.intValue() + "MB");
@@ -123,6 +159,7 @@ public class LoginScreen extends Application {
 
         login.setOnAction(e -> {
             // TODO: Login
+            login.setDisable(true); 
             System.out.println(uname.getText() + " " + versionList.getValue() + " " + (int) ramSlider.getValue() + "MB.");
             //checking if minecraft folder and the game exists
             boolean pathexist = ExistenceChecker.version_exist(versionList.getValue());
@@ -132,6 +169,7 @@ public class LoginScreen extends Application {
             if (!(this._gameThread != null && this._gameThread.isAlive()) && !(this._workerThread != null && this._workerThread.isAlive())){
                 InitializationHandler.init_client(uname.getText(), versionList.getValue(), (int) ramSlider.getValue(),"none");
             }
+
             try
             {
                 if (!pathexist) {
@@ -141,6 +179,7 @@ public class LoginScreen extends Application {
                     
                     if (this._workerThread != null && this._workerThread.isAlive()) {
                         System.out.println("Thread is still running.");
+                        
                     } else {
                         Task<Void> downloadTask = new Task<Void>() { 
                             @Override
@@ -154,6 +193,7 @@ public class LoginScreen extends Application {
                             System.out.println("Task completed!");
                             status.setText("Status: Download complete, run the game.");
                             status.setStyle("-fx-fill: green;");
+                            login.setDisable(false); 
                         });
                         
                         this._workerThread = new Thread(downloadTask);
@@ -173,6 +213,8 @@ public class LoginScreen extends Application {
                             
                             @Override
                             protected Void call() throws Exception {
+                                status.setText("Status: Game is ready.");
+                                status.setStyle("-fx-fill: green;");
                                 InitializationHandler.init_client(uname.getText(), versionList.getValue(), (int) ramSlider.getValue(),"start");
                                 return null;
                             }
@@ -180,8 +222,9 @@ public class LoginScreen extends Application {
 
                         gameTask.setOnSucceeded(event -> {
                             System.out.println("Version exists. Run the game...");
-                            status.setText("Game has been stopped.");
+                            status.setText("Status: Game has been stopped.");
                             status.setStyle("-fx-fill: yellow;");
+                            login.setDisable(false); 
                         });
 
                         this._gameThread = new Thread(gameTask);
@@ -194,6 +237,7 @@ public class LoginScreen extends Application {
                 System.out.println(ex.getMessage());
                 status.setText("Status: Error occured");
                 status.setStyle("-fx-fill: red;");
+                login.setDisable(false); 
             }
         });
     
