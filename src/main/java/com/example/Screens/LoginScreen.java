@@ -11,12 +11,19 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.geometry.Pos;
 import java.util.List;
+import javafx.scene.layout.BorderPane;
+
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 import javafx.concurrent.Task;
 import javafx.application.Platform;
 
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+
+import java.awt.Desktop;
+import java.net.URI;
 
 import com.sun.management.OperatingSystemMXBean;
 import java.lang.management.ManagementFactory;
@@ -34,8 +41,36 @@ public class LoginScreen extends Application {
     private Thread _workerThread;
     private Thread _gameThread; 
 
+    private Image _gitlogo; 
+    private Image _terminallogo; 
+
     @Override 
     public void start(Stage primaryStage) {
+
+        //logos
+        _gitlogo = new Image(getClass().getResourceAsStream("/images/25231.png"));
+        _terminallogo = new Image(getClass().getResourceAsStream("/images/tp.png"));
+        
+        ImageView imageView = new ImageView(_gitlogo);
+        ImageView termView = new ImageView(_terminallogo);
+        
+        imageView.setFitWidth(50);
+        imageView.setFitHeight(50);
+        
+        termView.setFitWidth(50);
+        termView.setFitHeight(50);
+        
+        imageClick(termView,"https://ncoreport.netlify.app");
+        imageClick(imageView,"https://github.com/FullmetalNeverCore");
+        
+        HBox hbox = new HBox(imageView, termView); 
+        hbox.setAlignment(Pos.CENTER); 
+        
+        BorderPane bp = new BorderPane();
+        bp.setBottom(hbox); 
+        
+
+
         this._font = Font.loadFont(getClass().getResourceAsStream("/fonts/Minecraft_Evenings.ttf"), 40);
         this._primaryStage = primaryStage;
         this._primaryStage.setTitle("0xMC - free launcher for pre-release Minecraft versions.");
@@ -45,7 +80,8 @@ public class LoginScreen extends Application {
 
 
         //adding login box to screen 
-        this._root.getChildren().add(createLoginUI());
+        this._root.getChildren().addAll(bp,createLoginUI());
+        
 
 
         this._scene = new Scene(_root, 800, 600);
@@ -73,6 +109,24 @@ public class LoginScreen extends Application {
             login.setDisable(true); 
             return false;
         }
+    }
+
+
+    //image click event 
+    public void imageClick(ImageView img,String link){
+        img.setOnMouseClicked(event -> {
+            try {
+                System.out.println("Clicked");
+                URI uri = new URI(link);
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().browse(uri);
+                } else {
+                    System.out.println("Desktop not supported, can't open link");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     //TODO: login and version caching
@@ -149,7 +203,7 @@ public class LoginScreen extends Application {
         ramSlider.setMajorTickUnit(totalMemory / 4);
         ramSlider.setBlockIncrement(totalMemory / 10);
     
-        Text selectedRam = UIBuildingBlocks.createText("Selected RAM: " + ((int) ramSlider.getValue()) + "MB");
+        Text selectedRam = UIBuildingBlocks.createText("Allocated RAM: " + ((int) ramSlider.getValue()) + "MB");
         selectedRam.setStyle("-fx-fill: white;");
         ramSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
             selectedRam.setText("Allocated RAM: " + newVal.intValue() + "MB");
